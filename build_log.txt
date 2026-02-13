@@ -1,0 +1,28 @@
+
+> expense_tracking@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 6.0s
+  Running TypeScript ...
+Failed to compile.
+
+./src/lib/hooks/use-family.ts:56:28
+Type error: Conversion of type '{ id: string; family_id: string; user_id: string; role: string; joined_at: string; profiles: SelectQueryError<"could not find the relation between family_members and profiles">; }[]' to type 'FamilyMember[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: string; family_id: string; user_id: string; role: string; joined_at: string; profiles: SelectQueryError<"could not find the relation between family_members and profiles">; }' is not comparable to type 'FamilyMember'.
+    Type '{ id: string; family_id: string; user_id: string; role: string; joined_at: string; profiles: SelectQueryError<"could not find the relation between family_members and profiles">; }' is not comparable to type '{ profiles: { id: string; display_name: string; created_at: string; updated_at: string; } | null; }'.
+      Types of property 'profiles' are incompatible.
+        Type 'SelectQueryError<"could not find the relation between family_members and profiles">' is not comparable to type '{ id: string; display_name: string; created_at: string; updated_at: string; } | null'.
+
+  54 |
+  55 |                 if (listError) throw listError;
+> 56 |                 setMembers(allMembers as FamilyMember[]);
+     |                            ^
+  57 |             } else {
+  58 |                 setFamily(null);
+  59 |                 setMembers([]);
+Next.js build worker exited with code: 1 and signal: null
