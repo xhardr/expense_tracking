@@ -20,8 +20,8 @@ export function formatDate(dateStr: string, format: "full" | "short" | "relative
     const now = new Date();
 
     if (format === "relative") {
-        const diffTime = Math.abs(now.getTime() - date.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        // const diffTime = Math.abs(now.getTime() - date.getTime());
+        // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (date.toDateString() === now.toDateString()) return "Today";
 

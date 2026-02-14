@@ -17,7 +17,7 @@ export function useHistory() {
     const [records, setRecords] = useState<DailyRecordWithExpenses[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const supabase = createClient();
+    const [supabase] = useState(() => createClient());
 
     const fetchMonth = useCallback(
         async (year: number, month: number) => {

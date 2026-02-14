@@ -12,8 +12,10 @@ import { useDailyRecord } from "@/lib/hooks/use-daily-record";
 import { useExpenses } from "@/lib/hooks/use-expenses";
 import { useProfile } from "@/lib/hooks/use-profile";
 import { useFamily } from "@/lib/hooks/use-family";
-import { getGreeting, formatCurrency } from "@/lib/utils/format";
+import { useHistory } from "@/lib/hooks/use-history";
+import { getGreeting, formatCurrency, getSpendingColor, cn } from "@/lib/utils/format";
 import { Plus, Loader2, Users } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -38,7 +40,19 @@ export default function DashboardPage() {
         record?.id
     );
     const { family, getFamilyActivity } = useFamily();
+    const { fetchMonth, records: historyRecords } = useHistory();
     const [familyActivity, setFamilyActivity] = useState<FamilyRecord[]>([]);
+    const [monthlySpent, setMonthlySpent] = useState(0);
+
+    useEffect(() => {
+        const now = new Date();
+        fetchMonth(now.getFullYear(), now.getMonth() + 1);
+    }, [fetchMonth]);
+
+    useEffect(() => {
+        const total = historyRecords.reduce((sum, r) => sum + Number(r.total_spent), 0);
+        setMonthlySpent(total);
+    }, [historyRecords]);
 
     useEffect(() => {
         if (family) {
@@ -46,7 +60,7 @@ export default function DashboardPage() {
                 setFamilyActivity(records);
             });
         }
-    }, [family, getFamilyActivity]); // Added getFamilyActivity to dependency array
+    }, [family, getFamilyActivity]);
 
     const greeting = getGreeting();
     // Use profile display name or fall back to "there"
@@ -76,6 +90,45 @@ export default function DashboardPage() {
                         </h1>
                     </motion.div>
                 </div>
+
+                {/* Budget Progress */}
+                {profile?.monthly_budget && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6"
+                    >
+                        <Card className="border-0 shadow-sm bg-gradient-to-r from-primary/10 to-transparent">
+                            <CardContent className="p-4">
+                                <div className="flex justify-between items-end mb-2">
+                                    <div>
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Monthly Budget
+                                        </p>
+                                        <p className="text-lg font-bold">
+                                            {formatCurrency(monthlySpent)}
+                                            <span className="text-sm font-normal text-muted-foreground ml-1">
+                                                / {formatCurrency(profile.monthly_budget)}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className={cn(
+                                            "text-sm font-bold",
+                                            getSpendingColor(profile.monthly_budget - monthlySpent, profile.monthly_budget)
+                                        )}>
+                                            {Math.min(100, Math.round((monthlySpent / profile.monthly_budget) * 100))}%
+                                        </p>
+                                    </div>
+                                </div>
+                                <Progress
+                                    value={Math.min(100, (monthlySpent / profile.monthly_budget) * 100)}
+                                    className="h-2"
+                                />
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
 
                 {/* Balance Card */}
                 {record ? (

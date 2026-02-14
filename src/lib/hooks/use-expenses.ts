@@ -39,7 +39,7 @@ export function useExpenses(dailyRecordId: string | undefined) {
     }, [supabase, dailyRecordId]);
 
     const addExpense = useCallback(
-        async (itemName: string, amount: number) => {
+        async (itemName: string, amount: number, category: string = "Other") => {
             if (!dailyRecordId) throw new Error("No daily record");
 
             // Optimistic update
@@ -49,6 +49,7 @@ export function useExpenses(dailyRecordId: string | undefined) {
                 daily_record_id: dailyRecordId,
                 item_name: itemName,
                 amount,
+                category,
                 created_at: new Date().toISOString(),
             };
             setExpenses((prev) => [optimistic, ...prev]);
@@ -60,6 +61,7 @@ export function useExpenses(dailyRecordId: string | undefined) {
                         daily_record_id: dailyRecordId,
                         item_name: itemName,
                         amount,
+                        category,
                     })
                     .select()
                     .single();

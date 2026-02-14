@@ -25,12 +25,13 @@ import {
     Plus,
     Edit2,
     Check,
-    X
+    X,
+    PieChart
 } from "lucide-react";
 
 export default function ProfilePage() {
     const { user, signOut } = useAuth();
-    const { profile, loading: profileLoading, updateDisplayName } = useProfile();
+    const { profile, loading: profileLoading, updateDisplayName, updateBudget } = useProfile();
     const {
         family,
         members,
@@ -43,7 +44,20 @@ export default function ProfilePage() {
     const [isEditingName, setIsEditingName] = useState(false);
     const [newName, setNewName] = useState("");
 
-    // Family actions state
+    const [isEditingBudget, setIsEditingBudget] = useState(false);
+    const [newBudget, setNewBudget] = useState("");
+
+    // ... existing state ...
+
+    const handleUpdateBudget = async () => {
+        const amount = parseFloat(newBudget);
+        if (isNaN(amount) || amount < 0) return;
+
+        setIsSubmitting(true);
+        await updateBudget(amount);
+        setIsSubmitting(false);
+        setIsEditingBudget(false);
+    };
     const [showJoinInput, setShowJoinInput] = useState(false);
     const [inviteCodeInput, setInviteCodeInput] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -334,6 +348,79 @@ export default function ProfilePage() {
                                     )}
                                 </div>
                             )}
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* Budget Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.12 }}
+                >
+                    <h3 className="mb-2 text-sm font-medium text-muted-foreground px-1">
+                        Settings
+                    </h3>
+                    <Card className="border-0 shadow-sm">
+                        <CardContent className="p-0">
+                            <div className="flex items-center gap-3 p-4">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10">
+                                    <PieChart className="h-4 w-4 text-emerald-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium">Monthly Budget</p>
+                                    {isEditingBudget ? (
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <Input
+                                                type="number"
+                                                value={newBudget}
+                                                onChange={(e) => setNewBudget(e.target.value)}
+                                                placeholder="5000000"
+                                                className="h-8 w-32"
+                                                autoFocus
+                                            />
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-8 w-8 text-green-600"
+                                                onClick={handleUpdateBudget}
+                                                disabled={isSubmitting}
+                                            >
+                                                <Check className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-8 w-8 text-destructive"
+                                                onClick={() => setIsEditingBudget(false)}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-xs text-muted-foreground">
+                                                {new Intl.NumberFormat("id-ID", {
+                                                    style: "currency",
+                                                    currency: "IDR",
+                                                    maximumFractionDigits: 0
+                                                }).format(profile?.monthly_budget || 5000000)}
+                                            </p>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-5 w-5 text-muted-foreground"
+                                                onClick={() => {
+                                                    setNewBudget(String(profile?.monthly_budget || 5000000));
+                                                    setIsEditingBudget(true);
+                                                }}
+                                            >
+                                                <Edit2 className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </motion.div>

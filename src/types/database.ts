@@ -16,18 +16,21 @@ export interface Database {
                     display_name: string
                     created_at: string
                     updated_at: string
+                    monthly_budget: number
                 }
                 Insert: {
                     id: string
                     display_name?: string
                     created_at?: string
                     updated_at?: string
+                    monthly_budget?: number
                 }
                 Update: {
                     id?: string
                     display_name?: string
                     created_at?: string
                     updated_at?: string
+                    monthly_budget?: number
                 }
                 Relationships: [
                     {
@@ -164,6 +167,7 @@ export interface Database {
                     daily_record_id: string
                     item_name: string
                     amount: number
+                    category: string
                     created_at: string
                 }
                 Insert: {
@@ -171,6 +175,7 @@ export interface Database {
                     daily_record_id: string
                     item_name: string
                     amount: number
+                    category?: string
                     created_at?: string
                 }
                 Update: {
@@ -178,6 +183,7 @@ export interface Database {
                     daily_record_id?: string
                     item_name?: string
                     amount?: number
+                    category?: string
                     created_at?: string
                 }
                 Relationships: [

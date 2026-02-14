@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { ThemedLogo } from "@/components/themed-logo";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -86,6 +87,10 @@ export default function LoginPage() {
                             Sign up
                         </Link>
                     </p>
+                    <div className="text-center">
+                        <span className="text-sm text-muted-foreground mr-2">Powered by</span>
+                        <ThemedLogo />
+                    </div>
                 </CardFooter>
             </form>
         </Card>

@@ -30,6 +30,7 @@ interface ExpenseRow {
     id: string;
     name: string;
     amount: string;
+    category: string;
 }
 
 export default function AddExpensePage() {
@@ -41,7 +42,7 @@ export default function AddExpensePage() {
         record ? String(record.total_money) : ""
     );
     const [rows, setRows] = useState<ExpenseRow[]>([
-        { id: generateId(), name: "", amount: "" },
+        { id: generateId(), name: "", amount: "", category: "Food" },
     ]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
@@ -56,7 +57,7 @@ export default function AddExpensePage() {
     const addRow = () => {
         setRows((prev) => [
             ...prev,
-            { id: generateId(), name: "", amount: "" },
+            { id: generateId(), name: "", amount: "", category: "Food" },
         ]);
     };
 
@@ -67,7 +68,7 @@ export default function AddExpensePage() {
 
     const updateRow = (
         id: string,
-        field: "name" | "amount",
+        field: "name" | "amount" | "category",
         value: string
     ) => {
         setRows((prev) =>
@@ -90,7 +91,7 @@ export default function AddExpensePage() {
             );
 
             for (const row of validRows) {
-                await addExpense(row.name.trim(), parseFloat(row.amount));
+                await addExpense(row.name.trim(), parseFloat(row.amount), row.category);
             }
 
             router.push("/");
@@ -180,6 +181,22 @@ export default function AddExpensePage() {
                                                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
                                                     {index + 1}
                                                 </span>
+                                                <select
+                                                    value={row.category}
+                                                    onChange={(e) =>
+                                                        updateRow(row.id, "category", e.target.value)
+                                                    }
+                                                    className="h-10 w-[4.5rem] rounded-md border-0 bg-transparent text-xs font-medium focus:ring-0"
+                                                >
+                                                    <option value="Food">🍔</option>
+                                                    <option value="Transport">🚗</option>
+                                                    <option value="Shopping">🛍️</option>
+                                                    <option value="Bills">📄</option>
+                                                    <option value="Entertainment">🎬</option>
+                                                    <option value="Health">💊</option>
+                                                    <option value="Education">🎓</option>
+                                                    <option value="Other">🔹</option>
+                                                </select>
                                                 <Input
                                                     placeholder="Item name"
                                                     value={row.name}

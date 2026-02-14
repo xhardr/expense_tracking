@@ -50,7 +50,7 @@ export function useProfile() {
         try {
             const { error } = await supabase
                 .from("profiles")
-                .upsert({ id: user.id, display_name: name }) // upsert just in case
+                .upsert({ id: user.id, display_name: name })
                 .eq("id", user.id);
 
             if (error) throw error;
@@ -58,6 +58,23 @@ export function useProfile() {
             return true;
         } catch (err) {
             console.error("Error updating profile:", err);
+            return false;
+        }
+    };
+
+    const updateBudget = async (budget: number) => {
+        if (!user) return;
+        try {
+            const { error } = await supabase
+                .from("profiles")
+                .update({ monthly_budget: budget })
+                .eq("id", user.id);
+
+            if (error) throw error;
+            setProfile((prev) => prev ? { ...prev, monthly_budget: budget } : null);
+            return true;
+        } catch (err) {
+            console.error("Error updating budget:", err);
             return false;
         }
     };
@@ -70,6 +87,7 @@ export function useProfile() {
         profile,
         loading,
         updateDisplayName,
+        updateBudget,
         refetch: fetchProfile
     };
 }

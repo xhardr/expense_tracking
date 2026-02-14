@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PlusCircle, Clock, User } from "lucide-react";
+import { Home, PlusCircle, Clock, User, PieChart } from "lucide-react";
 import { motion } from "framer-motion";
 
 const navItems = [
     { href: "/", icon: Home, label: "Home" },
     { href: "/add-expense", icon: PlusCircle, label: "Add" },
     { href: "/history", icon: Clock, label: "History" },
+    { href: "/report", icon: PieChart, label: "Report" },
     { href: "/profile", icon: User, label: "Profile" },
 ];
 

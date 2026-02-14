@@ -23,6 +23,7 @@ import {
     TrendingUp,
     Wallet,
     BarChart3,
+    Download,
 } from "lucide-react";
 
 const MONTHS = [
@@ -65,6 +66,36 @@ export default function HistoryPage() {
     const isCurrentMonth =
         year === now.getFullYear() && month === now.getMonth() + 1;
 
+    const handleDownloadCSV = () => {
+        const headers = ["Date", "User", "Item", "Category", "Amount"];
+        const rows: string[] = [];
+
+        filteredRecords.forEach(record => {
+            const date = record.date;
+            const userName = record.profiles?.display_name || "Unknown";
+
+            record.expense_items.forEach(item => {
+                rows.push([
+                    date,
+                    userName,
+                    `"${item.item_name.replace(/"/g, '""')}"`, // Escape quotes
+                    item.category || "Other",
+                    item.amount
+                ].join(","));
+            });
+        });
+
+        const csvContent = [headers.join(","), ...rows].join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `expenses_${year}_${month}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // Filter records based on view mode
     const filteredRecords = records.filter(r =>
         viewMode === "family" ? true : r.user_id === user?.id
@@ -90,6 +121,10 @@ export default function HistoryPage() {
                             Spending records
                         </p>
                     </div>
+                    <Button variant="outline" size="sm" onClick={handleDownloadCSV} disabled={filteredRecords.length === 0}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Export
+                    </Button>
                 </div>
 
                 {/* Family Toggle */}
