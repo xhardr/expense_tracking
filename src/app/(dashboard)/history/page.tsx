@@ -24,6 +24,7 @@ import {
     Wallet,
     BarChart3,
     Download,
+    Trash2,
 } from "lucide-react";
 
 const MONTHS = [
@@ -36,7 +37,7 @@ export default function HistoryPage() {
     const [year, setYear] = useState(now.getFullYear());
     const [month, setMonth] = useState(now.getMonth() + 1);
     const [expandedId, setExpandedId] = useState<string | null>(null);
-    const { records, loading, stats, fetchMonth } = useHistory();
+    const { records, loading, error, stats, fetchMonth, deleteRecord, deleteExpenseItem } = useHistory();
     const { family } = useFamily();
     const { user } = useAuth();
     const [viewMode, setViewMode] = useState<"my" | "family">("my");
@@ -166,6 +167,16 @@ export default function HistoryPage() {
                     </CardContent>
                 </Card>
 
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-4 bg-destructive/10 text-destructive text-sm rounded-xl text-center font-medium"
+                    >
+                        ⚠️ {error}
+                    </motion.div>
+                )}
+
                 {/* Monthly Summary */}
                 {!loading && filteredRecords.length > 0 && (
                     <motion.div
@@ -233,6 +244,16 @@ export default function HistoryPage() {
                                             expandedId === record.id ? null : record.id
                                         )
                                     }
+                                    onDelete={async () => {
+                                        if (confirm("Are you sure you want to delete this record?")) {
+                                            await deleteRecord(record.id);
+                                        }
+                                    }}
+                                    onDeleteItem={async (itemId, amount) => {
+                                        if (confirm("Delete this item?")) {
+                                            await deleteExpenseItem(itemId, record.id, amount);
+                                        }
+                                    }}
                                     currentUserId={user?.id}
                                 />
                             ))}
@@ -249,14 +270,20 @@ function DayCard({
     index,
     isExpanded,
     onToggle,
+    onDelete,
+    onDeleteItem,
     currentUserId,
 }: {
     record: DailyRecordWithExpenses;
     index: number;
     isExpanded: boolean;
     onToggle: () => void;
+    onDelete: () => Promise<void>;
+    onDeleteItem: (itemId: string, amount: number) => Promise<void>;
     currentUserId?: string;
 }) {
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
     const remaining = Number(record.remaining_money);
     const total = Number(record.total_money);
     const ratio = total > 0 ? remaining / total : 0;
@@ -326,16 +353,60 @@ function DayCard({
                                     {record.expense_items.map((item) => (
                                         <div
                                             key={item.id}
-                                            className="flex items-center justify-between text-sm"
+                                            className="group flex items-center justify-between py-1 text-sm"
                                         >
-                                            <span className="text-muted-foreground">
-                                                {item.item_name}
-                                            </span>
-                                            <span className="font-medium">
+                                            <div className="flex items-center gap-2 overflow-hidden">
+                                                {isOwner && (
+                                                    <button
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            setDeletingItemId(item.id);
+                                                            await onDeleteItem(item.id, Number(item.amount));
+                                                            setDeletingItemId(null);
+                                                        }}
+                                                        disabled={deletingItemId === item.id}
+                                                        className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10 p-1 rounded"
+                                                    >
+                                                        {deletingItemId === item.id ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        ) : (
+                                                            <Trash2 className="h-3 w-3" />
+                                                        )}
+                                                    </button>
+                                                )}
+                                                <span className="text-muted-foreground truncate">
+                                                    {item.item_name}
+                                                </span>
+                                            </div>
+                                            <span className="font-medium shrink-0">
                                                 {formatCurrency(Number(item.amount))}
                                             </span>
                                         </div>
                                     ))}
+
+                                    {isOwner && (
+                                        <div className="pt-4 flex justify-end">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2"
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    setIsDeleting(true);
+                                                    await onDelete();
+                                                    setIsDeleting(false);
+                                                }}
+                                                disabled={isDeleting}
+                                            >
+                                                {isDeleting ? (
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                                                ) : (
+                                                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                                )}
+                                                Delete Record
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         )}

@@ -61,11 +61,80 @@ export function useHistory() {
     const avgDaily =
         records.length > 0 ? totalSpent / records.length : 0;
 
+    const deleteRecord = useCallback(
+        async (id: string) => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const { error: deleteError } = await supabase
+                    .from("daily_records")
+                    .delete()
+                    .eq("id", id);
+
+                if (deleteError) throw deleteError;
+
+                // Update local state
+                setRecords((prev) => prev.filter((r) => r.id !== id));
+                return true;
+            } catch (err) {
+                setError(
+                    err instanceof Error ? err.message : "Failed to delete record"
+                );
+                return false;
+            } finally {
+                setLoading(false);
+            }
+        },
+        [supabase]
+    );
+
+    const deleteExpenseItem = useCallback(
+        async (itemId: string, dailyRecordId: string, amount: number) => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const { error: deleteError } = await supabase
+                    .from("expense_items")
+                    .delete()
+                    .eq("id", itemId);
+
+                if (deleteError) throw deleteError;
+
+                // Update local state: find the day, remove item, update total_spent
+                setRecords((prev) =>
+                    prev.map((record) => {
+                        if (record.id === dailyRecordId) {
+                            return {
+                                ...record,
+                                total_spent: Number(record.total_spent) - amount,
+                                expense_items: record.expense_items.filter((i) => i.id !== itemId),
+                            };
+                        }
+                        return record;
+                    })
+                );
+                return true;
+            } catch (err) {
+                setError(
+                    err instanceof Error ? err.message : "Failed to delete expense item"
+                );
+                return false;
+            } finally {
+                setLoading(false);
+            }
+        },
+        [supabase]
+    );
+
     return {
         records,
         loading,
         error,
         fetchMonth,
+        deleteRecord,
+        deleteExpenseItem,
         stats: { totalSpent, totalBudget, avgDaily },
     };
 }
